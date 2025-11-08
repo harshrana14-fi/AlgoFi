@@ -73,7 +73,9 @@ class AlgorandService {
   async createNFTAsset(params) {
     try {
       const { creator, assetName, unitName, total, decimals, url, metadata } = params;
-
+      if (!creator) {
+        throw new Error('Creator address must be provided to create an NFT asset.');
+      }
       const suggestedParams = await this.algodClient.getTransactionParams().do();
 
       // Create asset configuration transaction
@@ -92,7 +94,6 @@ class AlgorandService {
         reserve: undefined,
         suggestedParams
       });
-
       return {
         txn: Buffer.from(algosdk.encodeUnsignedTransaction(txn)).toString('base64'),
         txnId: txn.txID()

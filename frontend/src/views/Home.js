@@ -48,7 +48,7 @@ function Home({ account, connected }) {
             </span>
           </h1>
           <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-            AlgoFi is the decentralized NFT marketplace where artists, musicians, and creators
+            AlgoMint is the decentralized NFT marketplace where artists, musicians, and creators
             can mint, showcase, and trade their digital assets with zero hassle.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
@@ -93,7 +93,7 @@ function Home({ account, connected }) {
       {/* Features Section */}
       <section className="max-w-6xl mx-auto">
         <h2 className="text-4xl font-bold text-white text-center mb-12">
-          Why Choose AlgoFi?
+          Why Choose AlgoMint?
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
@@ -162,7 +162,7 @@ function Home({ account, connected }) {
             <div className="text-6xl mb-6">🔒</div>
             <h2 className="text-3xl font-bold text-white mb-4">Ready to Get Started?</h2>
             <p className="text-gray-300 mb-8">
-              Connect your wallet to start minting and trading NFTs on AlgoFi
+              Connect your wallet to start minting and trading NFTs on AlgoMint
             </p>
             <button className="px-8 py-4 bg-slate-700/50 text-gray-400 rounded-lg font-bold text-lg cursor-not-allowed border border-purple-500/30">
               Connect Wallet First
@@ -175,7 +175,7 @@ function Home({ account, connected }) {
       <section className="max-w-4xl mx-auto text-center py-12">
         <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-lg rounded-2xl p-12 border border-purple-500/30">
           <h2 className="text-3xl font-bold text-white mb-4">
-            Join the AlgoFi Community
+            Join the AlgoMint Community
           </h2>
           <p className="text-gray-300 mb-8">
             Be part of the next generation of digital creators and collectors

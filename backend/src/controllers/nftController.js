@@ -37,22 +37,31 @@ class NFTController {
   async mintNFT(req, res) {
     try {
       const { 
-        creator, 
+        creator,
         name, 
         type, 
         purchasable, 
         price, 
         assetName,
         unitName,
-        url,
+        description,
         metadata 
       } = req.body;
 
+      console.log('Mint NFT Request:', { creator, name, type, purchasable, price });
+
       // Validation
-      if (!creator || !name || !type) {
+      if (!creator) {
         return res.status(400).json({ 
           success: false,
-          error: 'Creator, name, and type are required' 
+          error: 'Creator address is required. Please connect your wallet.' 
+        });
+      }
+
+      if (!name || !type) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'NFT name and type are required fields.' 
         });
       }
 
@@ -70,15 +79,15 @@ class NFTController {
         });
       }
 
-      // Create NFT asset first
+      // Create NFT asset transaction
       const assetTxn = await algorandService.createNFTAsset({
         creator,
         assetName: assetName || name,
         unitName: unitName || 'NFT',
         total: 1,
         decimals: 0,
-        url: url || '',
-        metadata
+        url: '', // Will be updated after IPFS upload in production
+        metadata: description || metadata || ''
       });
 
       // Create application call transaction
@@ -88,8 +97,10 @@ class NFTController {
         type,
         purchasable: purchasable || false,
         price: price || 0,
-        metadata
+        metadata: description || metadata || ''
       });
+
+      console.log('Mint transactions created successfully');
 
       res.status(200).json({
         success: true,

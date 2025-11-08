@@ -2,7 +2,7 @@ from pyteal import *
 
 def approval_program():
     """
-    AlgoMint NFT Marketplace Smart Contract
+    AlgoFi NFT Marketplace Smart Contract
     Handles NFT minting, listing, and trading on Algorand
     """
     

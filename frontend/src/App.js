@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { PeraWalletConnect } from '@perawallet/connect';
 import Header from './components/Header';
 import Home from './views/Home';
 import Marketplace from './views/Marketplace';
@@ -9,52 +10,77 @@ function App() {
   const [account, setAccount] = useState(null);
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [peraWallet] = useState(() => new PeraWalletConnect());
+
+  // Disconnect wallet handler
+  const handleDisconnectWallet = useCallback(() => {
+    setAccount(null);
+    setConnected(false);
+  }, []);
+
+  // Disconnect wallet function
+  const disconnectWallet = useCallback(() => {
+    peraWallet.disconnect();
+    handleDisconnectWallet();
+  }, [peraWallet, handleDisconnectWallet]);
 
   // Connect wallet function
   const connectWallet = async () => {
     setLoading(true);
     try {
-      // Check if PeraWallet is available
-      if (window.PeraWallet) {
-        const peraWallet = window.PeraWallet;
-        await peraWallet.connect();
-        const accounts = await peraWallet.connector.accounts;
-        
-        if (accounts && accounts.length > 0) {
-          setAccount(accounts[0]);
-          setConnected(true);
-          localStorage.setItem('walletAddress', accounts[0]);
-        }
-      } else {
-        alert('Please install Pera Wallet extension');
-        window.open('https://perawallet.app/', '_blank');
+      const newAccounts = await peraWallet.connect();
+      
+      // Setup the disconnect event listener
+      peraWallet.connector?.on("disconnect", handleDisconnectWallet);
+
+      if (newAccounts.length) {
+        setAccount(newAccounts[0]);
+        setConnected(true);
       }
     } catch (error) {
       console.error('Wallet connection error:', error);
-      alert('Failed to connect wallet');
+      alert('Failed to connect wallet. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Disconnect wallet
-  const disconnectWallet = () => {
-    setAccount(null);
-    setConnected(false);
-    localStorage.removeItem('walletAddress');
-    if (window.PeraWallet) {
-      window.PeraWallet.disconnect();
-    }
-  };
-
-  // Check for previously connected wallet
+  // Initialize wallet connection
   useEffect(() => {
-    const savedAddress = localStorage.getItem('walletAddress');
-    if (savedAddress && window.PeraWallet) {
-      setAccount(savedAddress);
-      setConnected(true);
-    }
-  }, []);
+    const initializeWallet = async () => {
+      try {
+        // Try to reconnect existing session
+        const accounts = await peraWallet.reconnectSession();
+        if (accounts && accounts.length > 0) {
+          console.log('Reconnected wallet:', accounts[0]); // Debug log
+          setAccount(accounts[0]);
+          setConnected(true);
+        }
+
+        // Setup disconnect event listener
+        peraWallet.connector?.on("disconnect", handleDisconnectWallet);
+
+        // Setup connect event listener
+        peraWallet.connector?.on("connect", (newAccounts) => {
+          console.log('Wallet connected:', newAccounts[0]); // Debug log
+          if (newAccounts && newAccounts.length > 0) {
+            setAccount(newAccounts[0]);
+            setConnected(true);
+          }
+        });
+      } catch (error) {
+        console.error('Wallet initialization error:', error);
+      }
+    };
+
+    initializeWallet();
+
+    return () => {
+      // Cleanup event listeners
+      peraWallet.connector?.off("disconnect", handleDisconnectWallet);
+      peraWallet.connector?.off("connect");
+    };
+  }, [peraWallet, handleDisconnectWallet]);
 
   return (
     <Router>

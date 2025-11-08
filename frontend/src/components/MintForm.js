@@ -44,13 +44,24 @@ function MintForm({ account, onMintSuccess }) {
     setLoading(true);
 
     try {
+      // Check if wallet is connected
+      if (!account) {
+        setError('Please connect your wallet first');
+        setLoading(false);
+        return;
+      }
+
       // Validate form
       if (!formData.name || !formData.file) {
-        throw new Error('Name and file are required');
+        setError('Name and file are required');
+        setLoading(false);
+        return;
       }
 
       if (formData.purchasable && (!formData.price || parseFloat(formData.price) <= 0)) {
-        throw new Error('Valid price required for purchasable NFTs');
+        setError('Valid price required for purchasable NFTs');
+        setLoading(false);
+        return;
       }
 
       // Convert price to microAlgos if purchasable
@@ -58,21 +69,34 @@ function MintForm({ account, onMintSuccess }) {
         ? Math.floor(parseFloat(formData.price) * 1000000) 
         : 0;
 
-      // Create mint transaction
-      const response = await axios.post(`${API_URL}/nfts/mint`, {
+      console.log('Submitting mint request:', {
         creator: account,
         name: formData.name,
         type: formData.type,
         purchasable: formData.purchasable,
-        price: priceInMicroAlgos,
-        assetName: formData.name,
-        unitName: 'NFT',
-        url: '', // In production, upload to IPFS first
-        metadata: formData.description
+        price: priceInMicroAlgos
       });
 
+      // Send JSON data (not FormData)
+      const response = await axios.post(`${API_URL}/nfts/mint`, {
+        creator: account,  // ← This is the KEY fix!
+        name: formData.name,
+        type: formData.type,
+        purchasable: formData.purchasable,
+        price: priceInMicroAlgos,
+        description: formData.description,
+        assetName: formData.name,
+        unitName: 'NFT',
+        metadata: formData.description
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Mint response:', response.data);
+
       if (response.data.success) {
-        // In production, sign with wallet
         alert('Mint transaction created! Please sign in your wallet.');
         
         // Reset form
@@ -92,7 +116,9 @@ function MintForm({ account, onMintSuccess }) {
       }
     } catch (err) {
       console.error('Mint error:', err);
-      setError(err.response?.data?.error || err.message || 'Failed to mint NFT');
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to mint NFT';
+      setError(errorMsg);
+      alert(`Error: ${errorMsg}`);
     } finally {
       setLoading(false);
     }
@@ -105,6 +131,12 @@ function MintForm({ account, onMintSuccess }) {
       {error && (
         <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6">
           <p className="text-red-400">{error}</p>
+        </div>
+      )}
+
+      {!account && (
+        <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4 mb-6">
+          <p className="text-yellow-400">⚠️ Please connect your wallet to mint NFTs</p>
         </div>
       )}
 
