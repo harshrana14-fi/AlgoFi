@@ -1,6 +1,6 @@
 name: Issue Thank You Bot
 
-"on":
+on:
   issues:
     types: [opened]
 
@@ -8,7 +8,7 @@ jobs:
   thank_user:
     runs-on: ubuntu-latest
     permissions:
-      issues: write  
+      issues: write
 
     steps:
       - name: Comment on new issue
