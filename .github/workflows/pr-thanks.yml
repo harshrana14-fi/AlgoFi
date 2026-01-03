@@ -1,4 +1,4 @@
-name: Community Interaction Bot
+name: PR Interaction Bot
 
 on:
   pull_request_target:
@@ -7,8 +7,9 @@ on:
     types: [closed]
 
 permissions:
-  pull-requests: write
+  contents: read
   issues: write
+  pull-requests: write
 
 jobs:
   comment-on-activity:
@@ -38,7 +39,7 @@ jobs:
               message = `
               Hi @${author}! 👋
               
-              **Thanks for contributing to ${repo}!**
+              **Thanks for contributing to ${repo}!** 🎉
               We appreciate your effort and will review your changes soon.
               
               ---
@@ -63,7 +64,6 @@ jobs:
                  `;
               }
             }
-
             else if (eventName === 'issues' && payload.action === 'closed') {
               message = `
               **Issue Resolved!**
